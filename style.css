@@ -1,0 +1,156 @@
+/* --- 全局重置 --- */
+* { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; padding: 0; background: #000; font-family: -apple-system, sans-serif; overflow: hidden; }
+
+#game-stage { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+.scene {
+    width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+    display: none; flex-direction: column; 
+    transition: opacity 0.5s;
+}
+#scene-start, #scene-map, #scene-finale { justify-content: center; align-items: center; }
+.scene.active { display: flex; }
+
+/* --- 场景A: 开始 --- */
+#scene-start { 
+    background-image: url('assets/school/cover.jpg');
+    background-size: cover; background-position: center;
+    text-align: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.6);
+}
+#scene-start h1, #scene-start p { color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+.avatar-large { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid #FFD700; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.start-btn {
+    padding: 15px 50px; font-size: 1.2rem; font-weight: bold; color: white;
+    background: #FF4500; border: none; border-radius: 50px;
+    box-shadow: 0 5px 15px rgba(255,69,0,0.4); cursor: pointer; animation: pulse 2s infinite; margin-top: 30px;
+}
+
+/* --- 场景B: 地图 --- */
+#scene-map { background-image: url('assets/map_bg.jpg'); background-size: cover; background-position: center; position: relative; }
+#player-avatar {
+    position: absolute; top: 11%; left: 53%; width: 60px; height: 60px;
+    background-image: url('assets/avatar.png'); background-size: cover;
+    border-radius: 50%; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 5; transition: all 1.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: floatAvatar 3s ease-in-out infinite;
+}
+.map-node { position: absolute; width: 80px; height: 80px; background: transparent; border-radius: 50%; cursor: pointer; z-index: 10; transition: all 0.5s; }
+.map-node::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; border: 2px solid white; animation: ripple 1.5s infinite; }
+.map-node.locked { opacity: 0; pointer-events: none; transform: scale(0); }
+
+/* --- 场景C: 弹窗 --- */
+#modal-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 100;
+    display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+}
+.modal-card {
+    width: 85%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.8); transition: transform 0.3s;
+}
+.modal-open .modal-card { transform: scale(1); }
+.modal-img { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+.explore-btn {
+    background: #4facfe; color: white; border: none; padding: 12px 30px;
+    border-radius: 25px; font-size: 1rem; cursor: pointer; font-weight: bold;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); animation: pulse 2s infinite;
+}
+
+/* --- 场景D: 详情页 --- */
+#scene-detail { background: #2c3e50; display: none; z-index: 200; overflow-y: scroll; scroll-snap-type: y mandatory; }
+#scene-detail.active { display: block; }
+.detail-slide {
+    width: 100%; height: 100vh; scroll-snap-align: start; position: relative;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 20px; background: #fff; border-bottom: 5px solid #f0f0f0;
+}
+.slide-content { width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.slide-img-box {
+    width: 90%; height: 45vh; display: flex; justify-content: center; align-items: center;
+    overflow: hidden; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: #000;
+}
+.slide-img-box img { width: 100%; height: 100%; object-fit: contain; }
+.slide-text-box {
+    width: 90%; margin-top: 20px; background: rgba(255, 248, 225, 0.9);
+    padding: 15px; border-radius: 10px; border-left: 5px solid #FFD700;
+}
+.slide-text-box p { font-size: 1rem; line-height: 1.6; color: #333; text-align: justify; margin: 0; }
+.scroll-hint { position: absolute; bottom: 20px; opacity: 0.6; animation: floatAvatar 2s infinite; font-size: 0.8rem; }
+.back-btn {
+    background: #FF4500; color: white; border: none; padding: 15px 30px;
+    border-radius: 50px; font-size: 1.1rem; font-weight: bold;
+    box-shadow: 0 5px 15px rgba(255, 69, 0, 0.5); cursor: pointer; margin-top: 30px; width: 80%;
+    animation: pulse 1.5s infinite;
+}
+
+/* --- 场景E: 终极通关页 (新) --- */
+#scene-finale {
+    background: radial-gradient(circle, #1a2a6c, #b21f1f, #fdbb2d);
+    overflow: hidden;
+}
+.finale-card {
+    background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px;
+    width: 85%; text-align: center; z-index: 10;
+    box-shadow: 0 0 50px rgba(255,215,0,0.5);
+    animation: zoomBounce 1s ease-out;
+}
+.badge {
+    background: #FFD700; color: #d35400; padding: 10px 20px;
+    border-radius: 50px; font-weight: bold; display: inline-block; margin-top: 20px;
+    border: 2px solid #fff; box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+.finale-text { font-size: 1rem; line-height: 1.8; color: #333; text-align: left; background: #fff3e0; padding: 15px; border-radius: 10px; }
+
+/* 纯CSS烟花效果 */
+.firework {
+  position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%;
+  box-shadow: 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff;
+  animation: firework 2s infinite;
+}
+.firework:nth-child(2) { top: 30%; left: 20%; animation-delay: 0.5s; }
+.firework:nth-child(3) { top: 70%; left: 80%; animation-delay: 1s; }
+
+@keyframes firework {
+  0% { transform: translate(0, 0); opacity: 1; box-shadow: 0 0 0 0 #fff; }
+  100% { 
+    transform: translate(0, -100px); opacity: 0;
+    box-shadow: -100px 200px 0 0 #f00, 100px 100px 0 0 #0f0, -50px -150px 0 0 #00f, 50px -50px 0 0 #ff0,
+                -80px -100px 0 0 #f0f, 80px -200px 0 0 #0ff;
+  }
+}
+
+/* --- HUD 升级版 (进度条) --- */
+#hud { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: none; z-index: 50; pointer-events: none; }
+.status-bar {
+    display: flex; align-items: center; background: rgba(0,0,0,0.7);
+    padding: 5px 15px 5px 5px; border-radius: 50px; border: 2px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+.icon { font-size: 1.5rem; margin-right: 5px; animation: pulse 1s infinite; }
+.bar-bg { width: 150px; height: 15px; background: #555; border-radius: 10px; overflow: hidden; margin-right: 10px; }
+.bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); transition: width 1s ease-out; }
+.score-text { color: white; font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+
+/* 飘字特效 */
+.float-score {
+    position: absolute; color: #FFD700; font-weight: bold; font-size: 2rem;
+    text-shadow: 0 0 5px #000; z-index: 999; pointer-events: none;
+    animation: floatUp 1.5s forwards;
+}
+@keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
+
+/* 通用动画 */
+@keyframes slideLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.anim-left { animation: slideLeft 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+@keyframes slideRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.anim-right { animation: slideRight 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+@keyframes zoomBounce { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.anim-zoom { animation: zoomBounce 0.8s ease-out forwards; }
+@keyframes rotateIn { 0% { transform: rotate(-90deg) scale(0.5); opacity: 0; } 100% { transform: rotate(0) scale(1); opacity: 1; } }
+.anim-rotate { animation: rotateIn 0.8s ease-out forwards; }
+@keyframes flipIn { 0% { transform: perspective(400px) rotateX(90deg); opacity: 0; } 100% { transform: perspective(400px) rotateX(0deg); opacity: 1; } }
+.anim-flip { animation: flipIn 0.8s ease-out forwards; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes ripple { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes floatAvatar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }

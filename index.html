@@ -3,177 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇敢的成长小超人 - 冒险版</title>
-    <style>
-        /* --- CSS Reset & 基础样式 --- */
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; background: #2c3e50; font-family: "Microsoft YaHei", sans-serif; overflow: hidden; }
-        
-        /* --- 游戏主容器 (Stage) --- */
-        #game-stage {
-            width: 100vw; height: 100vh;
-            position: relative;
-            background: #000;
-            overflow: hidden;
-        }
-
-        /* --- 通用场景样式 (Scene) --- */
-        .scene {
-            width: 100%; height: 100%;
-            position: absolute; top: 0; left: 0;
-            display: none; /* 默认隐藏所有场景 */
-            flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.5s;
-        }
-        /* 激活的场景可见 */
-        .scene.active { display: flex; }
-
-        /* --- 1. 开始界面 --- */
-        #scene-start { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
-        .title { font-size: 2.5rem; color: #ff9f43; text-shadow: 2px 2px #333; margin-bottom: 20px; font-weight: bold; }
-        .btn-start {
-            padding: 15px 40px; font-size: 1.5rem;
-            background: #ff6b6b; color: white; border: none; border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
-            cursor: pointer; animation: pulse 1.5s infinite;
-        }
-
-        /* --- 2. 地图界面 --- */
-        #scene-map { 
-            background-color: #7bed9f; /* 暂时用绿色代替地图背景 */
-            background-image: radial-gradient(#ffffff 20%, transparent 20%), radial-gradient(#ffffff 20%, transparent 20%);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-            display: none; /* 这是一个block类型的显示，稍后JS控制 */
-        }
-        
-        /* 地点图标 (Nodes) - 绝对定位 */
-        .map-node {
-            position: absolute; width: 80px; height: 80px;
-            background: white; border-radius: 50%;
-            border: 4px solid #ff9f43;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 0.8rem; font-weight: bold; cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-        }
-        .map-node:active { transform: scale(0.9); }
-        /* 模拟坐标，稍后我们要微调 */
-        #node-school { top: 20%; left: 30%; }
-        #node-robot { top: 50%; right: 20%; }
-        #node-sports { bottom: 20%; left: 20%; }
-
-        /* --- UI 层 (HUD) --- */
-        #hud-layer {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 15px; pointer-events: none; /* 让点击穿透过去 */
-            display: none; justify-content: space-between;
-        }
-        .courage-bar-container {
-            width: 200px; height: 20px; background: rgba(0,0,0,0.5);
-            border-radius: 10px; overflow: hidden; border: 2px solid white;
-        }
-        #courage-fill {
-            width: 0%; height: 100%; background: #feca57; transition: width 0.5s;
-        }
-
-        /* --- 动画定义 --- */
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    </style>
+    <title>勇敢的成长小超人</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 游戏舞台 -->
+    <audio id="bgm" loop> <source src="assets/bgm.mp3" type="audio/mpeg"> </audio>
+
     <div id="game-stage">
         
-        <!-- UI 层 (HUD) -->
-        <div id="hud-layer">
-            <div style="color: white; font-weight: bold; text-shadow: 1px 1px 2px black;">
-                勇气值: <span id="courage-text">0</span>/100
-            </div>
-            <div class="courage-bar-container">
-                <div id="courage-fill"></div>
+        <!-- 1. 升级版 HUD (进度条) -->
+        <div id="hud">
+            <div class="status-bar">
+                <div class="icon">⚡</div>
+                <div class="bar-bg">
+                    <div id="bar-fill" class="bar-fill"></div>
+                </div>
+                <div class="score-text"><span id="score-val">0</span>/100</div>
             </div>
         </div>
 
-        <!-- 场景 1: 开始界面 -->
+        <!-- 2. 开始界面 -->
         <div id="scene-start" class="scene active">
-            <div class="title">勇敢的小超人</div>
-            <div style="margin-bottom: 30px; font-size: 1.2rem; color: #555;">点击开启成长冒险</div>
-            <button class="btn-start" onclick="Game.start()">开始冒险</button>
+            <img src="assets/avatar.png" class="avatar-large" onerror="this.style.display='none'">
+            <h1 style="margin-bottom: 10px;">勇敢的成长小超人</h1>
+            <p>点击开始，探索李昱宸的成长地图</p>
+            <button class="start-btn" onclick="Game.start()">开始冒险</button>
         </div>
 
-        <!-- 场景 2: 地图界面 -->
+        <!-- 3. 地图界面 -->
         <div id="scene-map" class="scene">
-            <!-- 这里放置点击点 -->
-            <div id="node-school" class="map-node" onclick="Game.openStory('school')">🏫 学校</div>
-            <div id="node-robot" class="map-node" onclick="Game.openStory('robot')">🤖 机器人</div>
-            <div id="node-sports" class="map-node" onclick="Game.openStory('sports')">⚽ 运动场</div>
+            <div id="player-avatar"></div>
+            <!-- 关卡 -->
+            <div class="map-node" data-index="0" style="top: 16%; left: 82%;" onclick="Game.showStory('school', this)"></div>
+            <div class="map-node locked" data-index="1" style="top: 30%; left: 16%;" onclick="Game.showStory('sports', this)"></div>
+            <div class="map-node locked" data-index="2" style="top: 44%; left: 78%;" onclick="Game.showStory('art', this)"></div>
+            <div class="map-node locked" data-index="3" style="top: 48%; left: 6%;"  onclick="Game.showStory('robot', this)"></div>
+            <div class="map-node locked" data-index="4" style="top: 79%; left: 76%;" onclick="Game.showStory('travel', this)"></div>
         </div>
 
-        <!-- 场景 3: 故事弹窗 (暂时隐藏) -->
-        <!-- 稍后做 -->
+        <!-- 4. 弹窗 -->
+        <div id="modal-overlay">
+            <div class="modal-card">
+                <img src="" class="modal-img" id="m-img">
+                <h3 class="modal-title" id="m-title">标题</h3>
+                <p class="modal-text" id="m-text">简介</p>
+                <button class="explore-btn" onclick="Game.enterDetail()">🚀 深入探索</button>
+            </div>
+        </div>
+
+        <!-- 5. 详情页 -->
+        <div id="scene-detail" class="scene">
+            <!-- 这里的结构由 JS 动态生成 -->
+        </div>
+
+        <!-- ⚠️ 新增：6. 终极通关页 (满屏烟花) -->
+        <div id="scene-finale" class="scene">
+            <div class="firework"></div>
+            <div class="firework"></div>
+            <div class="firework"></div>
+            
+            <div class="finale-card">
+                <h1>🎉 挑战成功！</h1>
+                <img src="assets/avatar.png" class="avatar-large" style="margin: 20px 0;">
+                <p class="finale-text">
+                    从第一次害羞不敢说话，到站在舞台中央；<br>
+                    从害怕困难，到享受挑战。<br>
+                    这100分勇气值，<br>
+                    是我一步步成长的见证！
+                </p>
+                <div class="badge">🏅 获得称号：全能小超人</div>
+                <p style="font-size: 0.9rem; margin-top: 20px; opacity: 0.8;">感谢观看我的成长故事</p>
+            </div>
+        </div>
 
     </div>
-
-    <script>
-        /**
-         * 模块化设计：Game 对象
-         * 这是一个单例模式 (Singleton Pattern)
-         */
-        const Game = {
-            // 1. 数据状态 (State)
-            data: {
-                courage: 0,
-                maxCourage: 100,
-                unlocked: []
-            },
-
-            // 2. 初始化
-            init: function() {
-                console.log("游戏引擎启动...");
-            },
-
-            // 3. 开始游戏逻辑
-            start: function() {
-                // 切换到地图场景
-                document.getElementById('scene-start').classList.remove('active');
-                document.getElementById('scene-map').classList.add('active');
-                
-                // 显示 HUD
-                document.getElementById('hud-layer').style.display = 'flex';
-                
-                // 播放背景音乐 (如果有)
-                // playBGM();
-            },
-
-            // 4. 打开故事 (核心交互)
-            openStory: function(locationId) {
-                alert("你点击了地点：" + locationId + "\n(下一步我们将在这里弹出精美的图文故事)");
-                
-                // 模拟增加勇气值
-                this.addCourage(20);
-            },
-
-            // 5. 增加数值
-            addCourage: function(amount) {
-                this.data.courage += amount;
-                if(this.data.courage > this.data.maxCourage) this.data.courage = this.data.maxCourage;
-                
-                // 更新 UI
-                this.updateUI();
-            },
-
-            // 6. 更新 UI 显示
-            updateUI: function() {
-                document.getElementById('courage-text').innerText = this.data.courage;
-                document.getElementById('courage-fill').style.width = this.data.courage + "%";
-            }
-        };
-
-        // 启动游戏
-        Game.init();
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
