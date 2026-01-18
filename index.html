@@ -3,430 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>快乐童年 - 越努力越幸运</title>
-
-    <!-- 引入 Swiper 和 Animate -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
+    <title>勇敢的成长小超人 - 冒险版</title>
     <style>
-        /* --- 核心样式系统 --- */
-        :root {
-            --primary-color: #4facfe;
-            --accent-color: #00f2fe;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* --- CSS Reset & 基础样式 --- */
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background: #2c3e50; font-family: "Microsoft YaHei", sans-serif; overflow: hidden; }
         
-        body, html {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #000;
-        }
-
-        /* 视频背景层 */
-        .video-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            opacity: 0.6;
-        }
-
-        .swiper { width: 100%; height: 100%; }
-
-        .swiper-slide {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background-size: cover;
-            background-position: center;
+        /* --- 游戏主容器 (Stage) --- */
+        #game-stage {
+            width: 100vw; height: 100vh;
             position: relative;
-            color: #fff;
+            background: #000;
+            overflow: hidden;
         }
 
-        /* 遮罩层：让文字更清晰 */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
-            z-index: 1;
+        /* --- 通用场景样式 (Scene) --- */
+        .scene {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; /* 默认隐藏所有场景 */
+            flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s;
+        }
+        /* 激活的场景可见 */
+        .scene.active { display: flex; }
+
+        /* --- 1. 开始界面 --- */
+        #scene-start { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
+        .title { font-size: 2.5rem; color: #ff9f43; text-shadow: 2px 2px #333; margin-bottom: 20px; font-weight: bold; }
+        .btn-start {
+            padding: 15px 40px; font-size: 1.5rem;
+            background: #ff6b6b; color: white; border: none; border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+            cursor: pointer; animation: pulse 1.5s infinite;
         }
 
-        .content {
-            z-index: 10;
-            width: 88%;
-            max-width: 500px;
-        }
-
-        /* 标题样式 */
-        h2 {
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            font-weight: 800;
-            letter-spacing: 2px;
-        }
-        
-        .tag {
-            display: inline-block;
-            padding: 5px 15px;
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        /* 图片相框样式 */
-        .frame {
-            width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            border: 3px solid rgba(255,255,255,0.8);
-            margin-bottom: 15px;
-        }
-
-        /* 照片墙网格布局 */
-        .grid-gallery {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .grid-gallery img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid rgba(255,255,255,0.6);
-        }
-        .grid-gallery img:first-child {
-            grid-column: 1 / -1; /* 第一张图横跨两列 */
-            height: 180px;
-        }
-
-        /* 向上滑动提示 */
-        .arrow-up {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 24px;
-            height: 24px;
-            border-left: 2px solid #fff;
-            border-top: 2px solid #fff;
-            animation: arrowAnim 2s infinite;
-            z-index: 20;
-        }
-        @keyframes arrowAnim {
-            0% { transform: translateX(-50%) rotate(45deg) translate(0, 0); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateX(-50%) rotate(45deg) translate(-10px, -10px); opacity: 0; }
+        /* --- 2. 地图界面 --- */
+        #scene-map { 
+            background-color: #7bed9f; /* 暂时用绿色代替地图背景 */
+            background-image: radial-gradient(#ffffff 20%, transparent 20%), radial-gradient(#ffffff 20%, transparent 20%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            display: none; /* 这是一个block类型的显示，稍后JS控制 */
         }
         
-        /* 音乐按钮 */
-        .music-control {
-            position: fixed;
-            top: 20px; right: 20px;
-            width: 35px; height: 35px;
-            background: url('https://cdn-icons-png.flaticon.com/512/109/109197.png') no-repeat center center / contain;
-            filter: invert(1);
-            z-index: 999;
-            opacity: 0.7;
-            animation: rotateMusic 4s linear infinite;
+        /* 地点图标 (Nodes) - 绝对定位 */
+        .map-node {
+            position: absolute; width: 80px; height: 80px;
+            background: white; border-radius: 50%;
+            border: 4px solid #ff9f43;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.8rem; font-weight: bold; cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
         }
-        @keyframes rotateMusic { 100% { transform: rotate(360deg); } }
-        .paused { animation-play-state: paused; opacity: 0.4; }
+        .map-node:active { transform: scale(0.9); }
+        /* 模拟坐标，稍后我们要微调 */
+        #node-school { top: 20%; left: 30%; }
+        #node-robot { top: 50%; right: 20%; }
+        #node-sports { bottom: 20%; left: 20%; }
 
-        /* --- 视频交互专用样式 --- */
+        /* --- UI 层 (HUD) --- */
+        #hud-layer {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 15px; pointer-events: none; /* 让点击穿透过去 */
+            display: none; justify-content: space-between;
+        }
+        .courage-bar-container {
+            width: 200px; height: 20px; background: rgba(0,0,0,0.5);
+            border-radius: 10px; overflow: hidden; border: 2px solid white;
+        }
+        #courage-fill {
+            width: 0%; height: 100%; background: #feca57; transition: width 0.5s;
+        }
 
-/* 1. 默认状态下的视频：稍微暗一点，为了衬托文字 */
-#video-page .video-bg {
-    opacity: 0.6; 
-    transition: all 0.5s ease; /* 变化时的过渡效果，很丝滑 */
-}
-
-/* 2. 当进入播放模式时：视频变亮，且层级提高 */
-#video-page.playing-mode .video-bg {
-    opacity: 1; /* 100% 清晰 */
-    z-index: 5;
-}
-
-/* 3. 当进入播放模式时：文字和遮罩层隐藏 */
-#video-page.playing-mode .overlay,
-#video-page.playing-mode .content {
-    opacity: 0;
-    pointer-events: none; /* 让鼠标点不到隐藏的文字 */
-    transition: opacity 0.5s ease;
-}
-
-/* 加一个播放按钮提示，让用户知道可以点 */
-.play-hint {
-    width: 60px; height: 60px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    margin: 20px auto;
-    border: 2px solid white;
-    animation: pulse 2s infinite;
-    cursor: pointer;
-}
-.play-hint::after {
-    content: '';
-    display: block;
-    width: 0; height: 0;
-    border-left: 15px solid white;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    margin-left: 5px;
-}
-
+        /* --- 动画定义 --- */
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div class="music-control" onclick="toggleAudio()" id="musicBtn"></div>
-    <!-- ⚠️注意：如果这里没有声音，你需要自己找一个mp3文件重命名为 bgm.mp3 放入 assets -->
-    <audio id="bgm" loop> <source src="assets/bgm.mp3" type="audio/mpeg"> </audio>
-
-    <div class="swiper mySwiper">
-        <div class="swiper-wrapper">
-
-            <!-- PAGE 1: 封面 -->
-            <!-- 使用那张看起来像证件照或特写的图作为背景 -->
-            <div class="swiper-slide" style="background-image: url('assets/微信图片_20250618103034.jpg');">
-                <div class="overlay"></div>
-                <div class="content">
-                    <div class="tag ani" data-ani="animate__fadeInDown">西安市碑林区大学南路小学分校</div>
-                    <h2 class="ani" data-ani="animate__zoomInDown">快乐童年<br>我们的校园生活</h2>
-                    <p class="ani" data-ani="animate__fadeInUp" style="margin-top:200px">越勤奋 · 越幸运</p>
-                </div>
-                <div class="arrow-up"></div>
+    <!-- 游戏舞台 -->
+    <div id="game-stage">
+        
+        <!-- UI 层 (HUD) -->
+        <div id="hud-layer">
+            <div style="color: white; font-weight: bold; text-shadow: 1px 1px 2px black;">
+                勇气值: <span id="courage-text">0</span>/100
             </div>
-
-            <!-- PAGE 2: 校园活动 (照片墙) -->
-            <div class="swiper-slide" style="background-image: url('assets/学校活动/873AD6FD119E202323590BFE91F2CABC.jpg');">
-                <div class="overlay" style="background: rgba(0,0,0,0.6)"></div>
-                <div class="content">
-                    <h2 class="ani" data-ani="animate__fadeInLeft">多彩校园</h2>
-                    <div class="grid-gallery">
-                        <!-- 这里的图片根据你提供的列表选取 -->
-                        <img src="assets/学校活动/啦啦操.jpg" class="ani" data-ani="animate__zoomIn" style="animation-delay: 0.2s">
-                        <img src="assets/学校活动/值周生1.jpg" class="ani" data-ani="animate__zoomIn" style="animation-delay: 0.4s">
-                        <img src="assets/学校活动/阅读之星.jpeg" class="ani" data-ani="animate__zoomIn" style="animation-delay: 0.6s">
-                    </div>
-                    <p class="ani" data-ani="animate__fadeInUp">每一次集体活动，都是成长的印记。<br>我是值周生，也是啦啦操队员！</p>
-                </div>
-                <div class="arrow-up"></div>
+            <div class="courage-bar-container">
+                <div id="courage-fill"></div>
             </div>
-
-            <!-- PAGE 3: 机器人比赛 (科技感) -->
-            <!-- 选用稍微暗一点的背景图 -->
-            <div class="swiper-slide" style="background-image: url('assets/参加机器人比赛/微信图片_20241227163053.jpg');">
-                <div class="overlay" style="background: linear-gradient(45deg, rgba(0,0,50,0.8), rgba(0,0,0,0.5));"></div>
-                <div class="content">
-                    <div class="tag ani" data-ani="animate__flipInX" style="border-color: #00f2fe; color: #00f2fe;">ROBOTICS</div>
-                    <h2 class="ani" data-ani="animate__slideInRight">科技少年</h2>
-                    <img src="assets/参加机器人比赛/微信图片_20260108195934.jpg" class="frame ani" data-ani="animate__backInUp">
-                    <p class="ani" data-ani="animate__fadeIn">逻辑与代码的碰撞，<br>探索未来的无限可能。</p>
-                </div>
-                <div class="arrow-up"></div>
-            </div>
-
-           <!-- PAGE 4: 主持风采 (视频交互版) -->
-            <!-- 给这一页加个 ID，方便 JS 控制 -->
-            <div class="swiper-slide" id="video-page" style="background-color: #000;">
-                
-                <!-- 视频层：默认静音(muted) -->
-                <video class="video-bg" id="host-video" playsinline loop muted autoplay>
-                    <!-- 请确认 assets 里文件名是否正确，如果是 assets/主持2.mp4 也可以 -->
-                    <source src="assets/在班级元旦晚会担任节目主持人.mp4" type="video/mp4">
-                </video>
-                
-                <!-- 遮罩层 -->
-                <div class="overlay"></div>
-                
-                <!-- 文字内容层 -->
-                <div class="content">
-                    <h2 class="ani" data-ani="animate__lightSpeedInLeft">自信表达</h2>
-                    <p class="ani" data-ani="animate__fadeInRight">元旦晚会主持人</p>
-                    
-                    <!-- 新增：一个显眼的播放按钮 -->
-                    <div class="play-hint ani" data-ani="animate__zoomIn"></div>
-                    
-                    <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8;">(点击屏幕 观看高清视频)</p>
-                </div>
-                
-                <div class="arrow-up"></div>
-            </div>
-
-            <!-- PAGE 5: 书法与艺术 (左右布局) -->
-            <div class="swiper-slide" style="background-image: url('assets/自己用电脑制作小报.jpg');">
-                <div class="overlay" style="background: rgba(255,255,255,0.9); "></div>
-                <!-- 注意：这页背景太亮，我们把文字改成深色 -->
-                <div class="content" style="color: #333;">
-                    <h2 class="ani" data-ani="animate__fadeInDown" style="color: #000; text-shadow:none;">翰墨丹青</h2>
-                    
-                    <div style="display:flex; justify-content: space-between; gap:10px; margin-top:20px;">
-                        <div style="width:48%">
-                            <img src="assets/爱好：书法/微信图片_202506181030381.jpg" class="frame ani" data-ani="animate__fadeInLeft" style="border-color:#333;">
-                            <p style="font-size:0.8rem; margin-top:5px;">书法作品</p>
-                        </div>
-                        <div style="width:48%">
-                            <img src="assets/美术作品/李昱宸.jpg" class="frame ani" data-ani="animate__fadeInRight" style="border-color:#333;">
-                            <p style="font-size:0.8rem; margin-top:5px;">美术创作</p>
-                        </div>
-                    </div>
-                    <p class="ani" data-ani="animate__fadeInUp" style="margin-top:20px;">静心书写，描绘多彩世界。</p>
-                </div>
-                <div class="arrow-up" style="border-color:#333;"></div>
-            </div>
-
-            <!-- PAGE 6: 体育与行走 (动感) -->
-            <div class="swiper-slide" style="background-image: url('assets/体育运动/滑雪.jpg');">
-                <div class="overlay"></div>
-                <div class="content">
-                    <h2 class="ani" data-ani="animate__rubberBand">读万卷书<br>行万里路</h2>
-                    
-                    <div class="swiper-nested" style="width:100%; overflow:hidden; margin: 20px 0;">
-                        <!-- 这里用一个小轮播或者并排图 -->
-                        <img src="assets/行万里路/延安.jpg" class="frame ani" data-ani="animate__rotateInDownLeft" style="transform: rotate(-5deg); width: 80%;">
-                    </div>
-                    
-                    <p class="ani" data-ani="animate__fadeInUp">从滑雪场到革命圣地延安，<br>强健体魄，传承精神。</p>
-                </div>
-                <div class="arrow-up"></div>
-            </div>
-
-            <!-- PAGE 7: 结尾 -->
-            <div class="swiper-slide" style="background: #2b5876; background: linear-gradient(to right, #4e4376, #2b5876);">
-                <div class="content">
-                    <img src="assets/微信图片_202506181030341.jpg" style="width:100px; height:100px; border-radius:50%; border:3px solid #fff; margin-bottom:20px;" class="ani" data-ani="animate__bounceIn">
-                    <h2 class="ani" data-ani="animate__zoomIn">感谢您的观看</h2>
-                    <p class="ani" data-ani="animate__fadeIn">请为我投上宝贵的一票！</p>
-                    <div style="margin-top: 50px; font-size: 0.8rem; opacity: 0.6;">
-                        Designed with HTML5 & CSS3
-                        <br>2025 参赛作品
-                    </div>
-                </div>
-            </div>
-
         </div>
+
+        <!-- 场景 1: 开始界面 -->
+        <div id="scene-start" class="scene active">
+            <div class="title">勇敢的小超人</div>
+            <div style="margin-bottom: 30px; font-size: 1.2rem; color: #555;">点击开启成长冒险</div>
+            <button class="btn-start" onclick="Game.start()">开始冒险</button>
+        </div>
+
+        <!-- 场景 2: 地图界面 -->
+        <div id="scene-map" class="scene">
+            <!-- 这里放置点击点 -->
+            <div id="node-school" class="map-node" onclick="Game.openStory('school')">🏫 学校</div>
+            <div id="node-robot" class="map-node" onclick="Game.openStory('robot')">🤖 机器人</div>
+            <div id="node-sports" class="map-node" onclick="Game.openStory('sports')">⚽ 运动场</div>
+        </div>
+
+        <!-- 场景 3: 故事弹窗 (暂时隐藏) -->
+        <!-- 稍后做 -->
+
     </div>
 
-    <!-- JS 逻辑 -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        // 音乐控制
-        function toggleAudio() {
-            var audio = document.getElementById("bgm");
-            var btn = document.getElementById("musicBtn");
-            if (audio.paused) {
-                audio.play();
-                btn.classList.remove("paused");
-            } else {
-                audio.pause();
-                btn.classList.add("paused");
-            }
-        }
+        /**
+         * 模块化设计：Game 对象
+         * 这是一个单例模式 (Singleton Pattern)
+         */
+        const Game = {
+            // 1. 数据状态 (State)
+            data: {
+                courage: 0,
+                maxCourage: 100,
+                unlocked: []
+            },
 
-        // Swiper 初始化
-        var swiper = new Swiper(".mySwiper", {
-            direction: "vertical",
-            mousewheel: true,
-            speed: 500, // 滑动速度
-            on: {
-                init: function () { playAnimations(this); },
-                slideChangeTransitionStart: function () { playAnimations(this); }
-            }
-        });
+            // 2. 初始化
+            init: function() {
+                console.log("游戏引擎启动...");
+            },
 
-        // 动画重放逻辑
-        function playAnimations(swiper) {
-            var activeSlide = swiper.slides[swiper.activeIndex];
-            var aniElements = activeSlide.querySelectorAll('.ani');
-            
-            aniElements.forEach(function(el) {
-                el.style.visibility = 'hidden'; // 先隐藏
-                var aniName = el.getAttribute('data-ani');
-                el.classList.remove('animate__animated', aniName);
+            // 3. 开始游戏逻辑
+            start: function() {
+                // 切换到地图场景
+                document.getElementById('scene-start').classList.remove('active');
+                document.getElementById('scene-map').classList.add('active');
                 
-                // 强制重绘
-                void el.offsetWidth; 
+                // 显示 HUD
+                document.getElementById('hud-layer').style.display = 'flex';
+                
+                // 播放背景音乐 (如果有)
+                // playBGM();
+            },
 
-                setTimeout(function() {
-                    el.style.visibility = 'visible'; // 显示
-                    el.classList.add('animate__animated', aniName);
-                }, 100);
-            });
-            
-            // 如果滑到了有视频的页面（第4页），尝试播放视频
-            var videos = document.querySelectorAll('video');
-            videos.forEach(v => v.pause()); // 先暂停所有
-            var activeVideo = activeSlide.querySelector('video');
-            if(activeVideo) activeVideo.play();
-        }
+            // 4. 打开故事 (核心交互)
+            openStory: function(locationId) {
+                alert("你点击了地点：" + locationId + "\n(下一步我们将在这里弹出精美的图文故事)");
+                
+                // 模拟增加勇气值
+                this.addCourage(20);
+            },
 
-        // 尝试自动播放音乐（浏览器通常会拦截，所以需要点击）
-        document.body.addEventListener('click', function() {
-            var audio = document.getElementById("bgm");
-            if(audio.paused) {
-                audio.play();
-                document.getElementById("musicBtn").classList.remove("paused");
-            }
-        }, { once: true });
+            // 5. 增加数值
+            addCourage: function(amount) {
+                this.data.courage += amount;
+                if(this.data.courage > this.data.maxCourage) this.data.courage = this.data.maxCourage;
+                
+                // 更新 UI
+                this.updateUI();
+            },
 
-        // --- 视频点击交互逻辑 ---
-    
-    // 1. 获取元素
-    const videoPage = document.getElementById('video-page');
-    const myVideo = document.getElementById('host-video');
-    const bgm = document.getElementById('bgm'); // 背景音乐
-    
-    // 2. 添加点击监听
-    videoPage.addEventListener('click', function() {
-        
-        // 切换类名：如果有这个类就删掉，没有就加上
-        videoPage.classList.toggle('playing-mode');
-        
-        // 判断当前是不是播放模式
-        if (videoPage.classList.contains('playing-mode')) {
-            // [进入播放模式]
-            myVideo.muted = false; // 开启视频声音
-            myVideo.currentTime = 0; // 从头开始放(可选)
-            myVideo.play();
-            
-            // 细节：如果视频有声音，最好把背景音乐(BGM)暂停，不然会吵
-            if(!bgm.paused) {
-                bgm.pause();
-                // 标记一下是我们暂停的，方便一会儿恢复
-                bgm.dataset.pausedByVideo = "true"; 
+            // 6. 更新 UI 显示
+            updateUI: function() {
+                document.getElementById('courage-text').innerText = this.data.courage;
+                document.getElementById('courage-fill').style.width = this.data.courage + "%";
             }
-            
-        } else {
-            // [退出播放模式 - 回到只有文字的状态]
-            myVideo.muted = true; // 视频静音
-            
-            // 恢复背景音乐
-            if(bgm.dataset.pausedByVideo === "true") {
-                bgm.play();
-                bgm.dataset.pausedByVideo = "false";
-            }
-        }
-    });
+        };
+
+        // 启动游戏
+        Game.init();
+
     </script>
 </body>
 </html>
